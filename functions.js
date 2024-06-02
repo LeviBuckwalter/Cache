@@ -1,5 +1,5 @@
 import fs from "node:fs/promises"
-//import { cacheObj } from "./global variables.js"
+//import { cacheObj } from "./global-variables.js"
 
 export let cacheObj = {}
 

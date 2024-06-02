@@ -1,5 +1,5 @@
 import { writeCache, readCache } from "./functions.js"
-//import { cacheObj } from "./global variables.js"
+//import { cacheObj } from "./global-variables.js"
 import { cacheObj } from "./functions.js"
 
 export class Cacher {
