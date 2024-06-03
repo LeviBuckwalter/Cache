@@ -1,11 +1,22 @@
 import fs from "node:fs/promises"
-//import { cacheObj } from "./global-variables.js"
-
-export let cacheObj = {}
+import { globals } from "./globals.js"
 
 export async function writeCache() {
-    await fs.writeFile("./cache.txt", JSON.stringify(cacheObj))
+    await fs.writeFile("./cache.txt", JSON.stringify(globals.cacheObj))
 }
 export async function readCache() {
-    cacheObj = JSON.parse(await fs.readFile("./cache.txt"))
+    globals.cacheObj = JSON.parse(await fs.readFile("./cache.txt"))
+}
+
+export function startCaching(milliseconds) {
+    if (milliseconds === undefined) {
+        milliseconds = 250
+    }
+    function cache() {
+        if (!globals.cacheUpToDate) {
+            writeCache()
+            globals.cacheUpToDate = true
+        }
+    }
+    setInterval(cache, milliseconds)
 }
