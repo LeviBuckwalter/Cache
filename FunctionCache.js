@@ -1,14 +1,12 @@
-import { writeCache, readCache } from "./functions.js"
-//import { cacheObj } from "./global-variables.js"
-import { cacheObj } from "./functions.js"
+import { globals } from "./globals.js"
 
-export class Cacher {
-    constructor(name, func) {
-        this.name = name
+export class FunctionCache {
+    constructor(id, func) {
+        this.id = id
         this.func = func
         this.memory = {}
     }
-    async get(parameters) {
+    get(parameters) {
         /*
         If you are entering more than one parameter, they must be given inside an array.
         */
@@ -26,24 +24,23 @@ export class Cacher {
         } else {
             let ret = this.func(...parameters)
             this.memory[memoryKey] = ret
-            await this.save()
+            this.save()
             return ret
         }
     }
-    async save() {
-        cacheObj[this.name] = this.memory
-        await writeCache()
+    save() {
+        globals.cacheObj[this.id] = this.memory
+        globals.cacheUpToDate = false
     }
-    async load() {
-        await readCache()
-        if (cacheObj[this.name] === undefined) {
+    load() {
+        if (globals.cacheObj[this.id] === undefined) {
             this.memory = {}
         } else {
-            this.memory = cacheObj[this.name]
+            this.memory = globals.cacheObj[this.id]
         }
     }
-    async clearMemory() {
+    async clearCache() {
         this.memory = {}
-        await this.save()
+        this.save()
     }
 }
