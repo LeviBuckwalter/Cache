@@ -48,3 +48,7 @@ export function retrieve(id) {
     */
     return globals.cacheObj[id]
 }
+
+export function inCacheObj(id) {
+    return globals.cacheObj.hasOwnProperty(id)
+}
