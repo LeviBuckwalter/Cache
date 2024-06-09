@@ -1,4 +1,4 @@
 export const globals = {
-    cacheObj: {},
+    cache: {},
     writePending: false,
 }
