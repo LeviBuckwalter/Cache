@@ -2,17 +2,14 @@ import { customStringify } from "../functions/parseAndStringify.js"
 import { params } from "../parameters.js"
 
 export class Entry {
-    constructor(contents, doesExpire, shelfLife) {
+    constructor(contents, expireTS) {
         this.contents = contents
-        this.doesExpire = doesExpire
-        if (this.doesExpire) {
-            this.expireTS = Date.now() + shelfLife
-        }
+        this.expireTS = expireTS //null if doesn't expire
         this.bites = customStringify(this.contents).length + params.entryExtraBites
     }
 
     get expired() {
-        if (this.doesExpire) {
+        if (this.expireTS !== null) {
             return Date.now() > this.expireTS
         } else {
             return false

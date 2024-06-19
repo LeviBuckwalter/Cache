@@ -7,7 +7,7 @@ let obj = {undefined: undefined, null: null, NaN: NaN, Infinity: Infinity}
 let str = customStringify(obj)
 */
 
-import { Entry } from "../classes/entry.js"
+import { Entry } from "../classes/Entry.js"
 
 export function customStringify(given) {
     //does not preserve NaNs (become null)
@@ -22,7 +22,7 @@ export function customStringify(given) {
             return { __type: `Set`, contents: [...value] }
         }
         if (value instanceof Entry) {
-            return { __type: `Entry`, skeleton: { key: value.key, contents: value.contents, doesExpire: value.doesExpire, expireTS: value.expireTS } }
+            return { __type: `Entry`, skeleton: { contents: value.contents, expireTS: value.expireTS } }
         }
         //This causes maximum callback error:
         // if (isNaN(value)) {
@@ -50,12 +50,7 @@ export function customParse(string) {
                 return new Set(value.contents)
             }
             if (value.__type === `Entry`) {
-                let E = new Entry(value.skeleton.contents)
-                E.doesExpire = value.skeleton.doesExpire
-                if (value.skeleton.doesExpire) {
-                    E.expireTS = value.skeleton.expireTS
-                }
-
+                let E = new Entry(value.skeleton.contents, value.skeleton.expireTS)
                 return E
             }
             //NaN doesn't work

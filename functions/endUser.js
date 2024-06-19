@@ -1,11 +1,11 @@
 import { cache } from "../cache.js"
-import { Entry } from "../classes/entry.js"
+import { Entry } from "../classes/Entry.js"
 import { addToLedger, removeFromLedger, trimCache } from "./metaFunctions.js"
 
 
 export function store(key, contents, shelfLife) {
-    const expires = (shelfLife) ? true : false
-    const entry = new Entry(contents, expires, shelfLife)
+    const expireTS = (shelfLife) ? Date.now() + shelfLife : undefined
+    const entry = new Entry(contents, expireTS)
     cache.entries[key] = entry
     addToLedger(key)
     cache.metadata.amtEntries++
