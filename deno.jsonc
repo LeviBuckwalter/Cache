@@ -1,0 +1,11 @@
+{
+  "tasks": {
+    "dev": "deno run --watch main.ts"
+  },
+  "imports": {
+    // Added via `deno add @std/fs`
+    "@std/fs": "jsr:@std/fs@^0.229.3",
+    // Added via `deno add @std/io`
+    "@std/io": "jsr:@std/io@^0.224.1"
+  }
+}
