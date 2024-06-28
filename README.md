@@ -1,7 +1,9 @@
-```js
-let {store, retrieve, discard} = await import("./functions/endUser.js")
-let { cache, redefineCache } = await import("./cache.js")
-let { readCache, writeCache } = await import("./functions/fileIO.js")
-let { customStringify, customParse } = await import("./functions/parseAndStringify.js")
-await readCache()
+Old function that might come in handy at a later date:
+
+```ts
+export function keysThatStartWith(string: string) {
+    const regex = new RegExp(`^${string}.*`);
+    const keys = Object.keys(cache.entries);
+    return keys.filter((key) => regex.test(key));
+}
 ```
