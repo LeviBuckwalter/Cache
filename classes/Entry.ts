@@ -12,7 +12,7 @@ export class Entry<T> {
         this.bytes = customStringify(this.contents).length + params.entryExtraBites
     }
 
-    get expired() {
+    get expired(): boolean {
         if (this.expireTS !== null) {
             return Date.now() > this.expireTS
         } else {
@@ -20,7 +20,7 @@ export class Entry<T> {
         }
     }
 
-    toSeed() {
-        return [this.contents, (this.expireTS === null) ? undefined : this.expireTS]
+    toSeed(): [T, number | null] {
+        return [this.contents, this.expireTS]
     }
 }
