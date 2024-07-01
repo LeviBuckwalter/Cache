@@ -29,6 +29,7 @@ export class AsyncFunctionCache<F extends (...args: any) => Promise<any>> {
         //else:
         const funcResult = await this.func(...params)
         this.cache.store(key, funcResult, this.shelfLife)
+        await this.cache.save()
         return funcResult
     }
 }
