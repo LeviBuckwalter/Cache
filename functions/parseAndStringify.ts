@@ -74,7 +74,13 @@ export function customParse(string: string, customClasses: constructor<any>[]) {
             if (!customClass) {
                 throw new Error(`customParse encountered a class whose name does not match any of the classes it was given to expect`)
             }
-            return new customClass(...value.seed)
+            if (Array.isArray(value.seed)) {
+                return new customClass(...value.seed)
+            } else {
+                return new customClass(value.seed)
+            }
+
+            
         }
         //if not special case:
         return value
