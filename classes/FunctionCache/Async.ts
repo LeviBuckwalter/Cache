@@ -4,7 +4,7 @@ type constructor<T> = new (...args: any) => T
 
 export class AsyncFunctionCache<F extends (...args: any) => Promise<any>> {
     private func: F
-    private cache: Cache<ReturnType<F>>
+    public cache: Cache<ReturnType<F>>
     private shelfLife: number | undefined
 
     constructor(

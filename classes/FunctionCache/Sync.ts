@@ -4,7 +4,7 @@ type constructor<T> = new (...args: any) => T
 
 export class SyncFunctionCache<F extends (...args: any) => any> {
     private func: F
-    private cache: Cache<ReturnType<F>>
+    public cache: Cache<ReturnType<F>>
     private shelfLife: number | undefined
 
     constructor(
