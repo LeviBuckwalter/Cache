@@ -43,7 +43,7 @@ export class Cache<T> {
         )
     }
 
-    async load() {
+    async load(): Promise<void> {
         this.clear()
         const stringified = await Deno.readTextFile(`./${this.parameters.name}.txt`)
         const parsed = customParse(stringified, this.parameters.customClasses)
@@ -51,7 +51,7 @@ export class Cache<T> {
         this.entries = parsed.entries
     }
 
-    store(key: string, contents: T, shelfLife?: number) {
+    store(key: string, contents: T, shelfLife?: number): void {
         if (key in this.entries) {
             this.discard(key)
         }
