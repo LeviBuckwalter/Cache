@@ -19,9 +19,12 @@ I will pass in to the customStringify and customParse functions the type that it
 
 export function customStringify(given: unknown): string {
     //does not preserve NaNs (become null)
+    const stringsByAlias: {[alias: number]: string} = {}
+    const aliasesByString: {[string: string]: number} = {}
+    let nextAlias: number = 0
 
     function replacer(_key: string, value: any) {
-        if (value !== value) { // Check for NaN
+        if (Number.isNaN(value)) { // Check for NaN
             return { __type: 'NaN' };
         }
         if (value) {
@@ -39,52 +42,80 @@ export function customStringify(given: unknown): string {
             if (value.toSeed !== undefined) {
                 return {__type: value.constructor.name, seed: value.toSeed()}
             }
+            if (typeof value === "string") {
+                if (!(value in aliasesByString)) {
+                    stringsByAlias[nextAlias] = value
+                    aliasesByString[value] = nextAlias
+                    nextAlias++
+                }
+                return `${aliasesByString[value]}`
+            }
         }
         //else:
         return value
     }
-
-    return JSON.stringify(given, replacer)
+    const stringifiedGiven = JSON.stringify(given, replacer)
+    return JSON.stringify({
+        stringsByAlias: stringsByAlias,
+        stringifiedGiven: stringifiedGiven
+    })
 }
 
 
 type constructor<T> = new (...args: any) => T
 
 export function customParse(string: string, customClasses: constructor<any>[]) {
+    const parsed: {stringifiedGiven: string, stringsByAlias: {[alias: number]: string}} = JSON.parse(string)
+    const { stringifiedGiven, stringsByAlias } = parsed
+    
+    
     function reviver(_key: string, value: any) {
-        if (value && value.__type) {
-            //if special case:
-            if (value.__type === 'NaN') {
-                return NaN;
+        if (value) {
+            if (typeof value === "string") {
+                const alias = Number(value)
+                if (!Number.isNaN(alias) && alias in stringsByAlias) {
+                    return stringsByAlias[alias]
+                } else {
+                    throw new Error(`the string "${value}" was either found to be a NaN or was not found in stringsByAlias. This shouldn't happen.`)
+                }
+                
             }
-            if (value.__type === 'Infinity') {
-                return Infinity;
-            }
-            if (value.__type === `Set`) {
-                return new Set(value.seed)
-            }
-            //if custom class:
-            let customClass: constructor<any> | undefined;
-            for (const c of customClasses) {
-                if (value.__type === c.name) {
-                    customClass = c
-                    break
+            if (value.__type) {
+                 //if special case:
+                if (value.__type === 'NaN') {
+                    return NaN;
+                }
+                if (value.__type === 'Infinity') {
+                    return Infinity;
+                }
+                if (value.__type === `Set`) {
+                    return new Set(value.seed)
+                }
+                //if custom class:
+                let customClass: constructor<any> | undefined;
+                for (const c of customClasses) {
+                    if (value.__type === c.name) {
+                        customClass = c
+                        break
+                    }
+                }
+                if (!customClass) {
+                    throw new Error(`customParse encountered a class whose name does not match any of the classes it was given to expect`)
+                }
+                if (Array.isArray(value.seed)) {
+                    return new customClass(...value.seed)
+                } else {
+                    return new customClass(value.seed)
                 }
             }
-            if (!customClass) {
-                throw new Error(`customParse encountered a class whose name does not match any of the classes it was given to expect`)
-            }
-            if (Array.isArray(value.seed)) {
-                return new customClass(...value.seed)
-            } else {
-                return new customClass(value.seed)
-            }
-
-            
+            //if not string or special case:
+            return value
         }
-        //if not special case:
-        return value
+        //if undefined...?
+        throw new Error(`replacer was given something undefined...?`)
     }
 
-    return JSON.parse(string, reviver)
+
+
+    return JSON.parse(stringifiedGiven, reviver)
 }
