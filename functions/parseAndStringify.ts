@@ -112,7 +112,8 @@ export function customParse(string: string, customClasses: constructor<any>[]) {
             return value
         }
         //if undefined...?
-        throw new Error(`replacer was given something undefined...?`)
+        return value
+        // throw new Error(`replacer was given something undefined...?`)
     }
 
 
