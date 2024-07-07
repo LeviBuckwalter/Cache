@@ -2,6 +2,10 @@ import { Entry } from "../classes/Entry.ts";
 import { customStringify, customParse } from "../functions/parseAndStringify.ts";
 import { params } from "../parameters.ts";
 
+/*
+thetotalBytes estimate is quite far off right now, unfortunately. It's because parse/stringify compresses the data, which is dope ofc, but it means estimating the size of the whole stringified cache is not very easy just going off of the size of stringified individual entries. Probable it would be better to limit to amt of entries instead? Maybe not. In any case, typically the totalBytes estimate is twice as big as the actual file size. At least that's about how it turned out for a cache with an estimate of 30MB and actual of 15MB.
+*/
+
 type constructor<T> = new (...args: any) => T
 
 export class Cache<T> {
