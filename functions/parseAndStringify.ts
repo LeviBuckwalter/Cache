@@ -39,6 +39,13 @@ export function customStringify(given: unknown): string {
             if (value instanceof Set) {
                 return { __type: `Set`, seed: [...value] }
             }
+            if (value instanceof Map) {
+                const mapSeed: any[][] = []
+                for (const [key, val] of value.entries()) {
+                    mapSeed.push([key, val])
+                }
+                return {__type: `Map`, seed: mapSeed}
+            }
             if (value.toSeed !== undefined) {
                 return {__type: value.constructor.name, seed: value.toSeed()}
             }
@@ -90,6 +97,13 @@ export function customParse(string: string, customClasses: constructor<any>[]) {
                 }
                 if (value.__type === `Set`) {
                     return new Set(value.seed)
+                }
+                if (value.__type === `Map`) {
+                    const m = new Map()
+                    for (const entry of value.seed) {
+                        m.set(entry[0], entry[1])
+                    }
+                    return m
                 }
                 //if custom class:
                 let customClass: constructor<any> | undefined;
