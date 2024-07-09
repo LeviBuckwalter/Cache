@@ -19,8 +19,8 @@ I will pass in to the customStringify and customParse functions the type that it
 
 export function customStringify(given: unknown): string {
     //does not preserve NaNs (become null)
-    const stringsByAlias: {[alias: number]: string} = {}
-    const aliasesByString: {[string: string]: number} = {}
+    const stringsByAlias: Map<number, string> = new Map()
+    const aliasesByString: Map<string, number> = new Map()
     let nextAlias: number = 0
 
     function replacer(_key: string, value: any) {
@@ -50,12 +50,12 @@ export function customStringify(given: unknown): string {
                 return {__type: value.constructor.name, seed: value.toSeed()}
             }
             if (typeof value === "string") {
-                if (!(value in aliasesByString)) {
-                    stringsByAlias[nextAlias] = value
-                    aliasesByString[value] = nextAlias
+                if (!(aliasesByString.has(value))) {
+                    stringsByAlias.set(nextAlias, value)
+                    aliasesByString.set(value, nextAlias)
                     nextAlias++
                 }
-                return `${aliasesByString[value]}`
+                return `${aliasesByString.get(value)}`
             }
         }
         //else:
@@ -63,7 +63,7 @@ export function customStringify(given: unknown): string {
     }
     const stringifiedGiven = JSON.stringify(given, replacer)
     return JSON.stringify({
-        stringsByAlias: stringsByAlias,
+        stringsByAliasArray: Array.from(stringsByAlias.values()),
         stringifiedGiven: stringifiedGiven
     })
 }
@@ -72,18 +72,22 @@ export function customStringify(given: unknown): string {
 type constructor<T> = new (...args: any) => T
 
 export function customParse(string: string, customClasses: constructor<any>[]) {
-    const parsed: {stringifiedGiven: string, stringsByAlias: {[alias: number]: string}} = JSON.parse(string)
-    const { stringifiedGiven, stringsByAlias } = parsed
+    const parsed: {stringifiedGiven: string, stringsByAliasArray: string[]} = JSON.parse(string)
+    const { stringifiedGiven, stringsByAliasArray } = parsed
+    const stringsByAliasMap: Map<number, string> = new Map()
+    for (let i = 0; i < stringsByAliasArray.length; i++) {
+        stringsByAliasMap.set(i, stringsByAliasArray[i])
+    }
     
     
     function reviver(_key: string, value: any) {
         if (value) {
             if (typeof value === "string") {
                 const alias = Number(value)
-                if (!Number.isNaN(alias) && alias in stringsByAlias) {
-                    return stringsByAlias[alias]
+                if (!Number.isNaN(alias) && stringsByAliasMap.has(alias)) {
+                    return stringsByAliasMap.get(alias)
                 } else {
-                    throw new Error(`the string "${value}" was either found to be a NaN or was not found in stringsByAlias. This shouldn't happen.`)
+                    throw new Error(`the string "${value}" was either found to be a NaN or was not found in stringsByAliasMap. This shouldn't happen.`)
                 }
                 
             }
