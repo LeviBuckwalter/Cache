@@ -17,12 +17,13 @@ I will pass in to the customStringify and customParse functions the type that it
 */
 
 
-export function customStringify(given: unknown): string {
+export function customStringify(given: unknown, useStringAliases?: boolean): string {
     //does not preserve NaNs (become null)
+    //the variables below will just not get used if useStringAliases is not defined
     const stringsByAlias: Map<number, string> = new Map()
     const aliasesByString: Map<string, number> = new Map()
     let nextAlias: number = 0
-
+    
     function replacer(_key: string, value: any) {
         if (Number.isNaN(value)) { // Check for NaN
             return { __type: 'NaN' };
@@ -49,7 +50,7 @@ export function customStringify(given: unknown): string {
             if (value.toSeed !== undefined) {
                 return {__type: value.constructor.name, seed: value.toSeed()}
             }
-            if (typeof value === "string") {
+            if (useStringAliases && typeof value === "string") {
                 if (!(aliasesByString.has(value))) {
                     stringsByAlias.set(nextAlias, value)
                     aliasesByString.set(value, nextAlias)
@@ -61,28 +62,34 @@ export function customStringify(given: unknown): string {
         //else:
         return value
     }
-    const stringifiedGiven = JSON.stringify(given, replacer)
-    return JSON.stringify({
-        stringsByAliasArray: Array.from(stringsByAlias.values()),
-        stringifiedGiven: stringifiedGiven
-    })
+    
+    if (useStringAliases) {
+        const stringifiedGiven = JSON.stringify(given, replacer)
+        return JSON.stringify({
+            stringsByAliasArray: Array.from(stringsByAlias.values()),
+            stringifiedGiven: stringifiedGiven
+        })
+    }//else:
+    return JSON.stringify(given, replacer)
 }
 
 
 type constructor<T> = new (...args: any) => T
 
-export function customParse(string: string, customClasses: constructor<any>[]) {
+export function customParse(string: string, customClasses: constructor<any>[], useStringAliases?: boolean) {
     const parsed: {stringifiedGiven: string, stringsByAliasArray: string[]} = JSON.parse(string)
     const { stringifiedGiven, stringsByAliasArray } = parsed
     const stringsByAliasMap: Map<number, string> = new Map()
-    for (let i = 0; i < stringsByAliasArray.length; i++) {
-        stringsByAliasMap.set(i, stringsByAliasArray[i])
+    if (useStringAliases) {
+        for (let i = 0; i < stringsByAliasArray.length; i++) {
+            stringsByAliasMap.set(i, stringsByAliasArray[i])
+        }
     }
     
     
     function reviver(_key: string, value: any) {
         if (value) {
-            if (typeof value === "string") {
+            if (useStringAliases && typeof value === "string") {
                 const alias = Number(value)
                 if (!Number.isNaN(alias) && stringsByAliasMap.has(alias)) {
                     return stringsByAliasMap.get(alias)
@@ -133,8 +140,8 @@ export function customParse(string: string, customClasses: constructor<any>[]) {
         return value
         // throw new Error(`replacer was given something undefined...?`)
     }
-
-
-
-    return JSON.parse(stringifiedGiven, reviver)
+    if (useStringAliases) {
+        return JSON.parse(stringifiedGiven, reviver)
+    }//else:
+    return JSON.parse(string, reviver)
 }

@@ -12,7 +12,8 @@ export class Cache<T> {
     parameters: {
         name: string
         size: number //in MBs
-        customClasses: constructor<any>[]
+        customClasses: constructor<any>[],
+        useStringAliases: boolean
     }
     metadata: {
         ledger: Set<string>[],
@@ -21,11 +22,12 @@ export class Cache<T> {
     }
     entries: { [key: string]: Entry<T> }
 
-    constructor(name: string, size: number, customClasses?: constructor<any>[]) {
+    constructor(name: string, size: number, customClasses?: constructor<any>[], useStringAliases?: boolean) {
         this.parameters = {
             name,
             size,
-            customClasses: (customClasses) ? customClasses : []
+            customClasses: (customClasses) ? customClasses : [],
+            useStringAliases: (useStringAliases) ? useStringAliases : false
         }
         this.parameters.customClasses.push(Entry<T>)
         this.metadata = {
@@ -40,17 +42,14 @@ export class Cache<T> {
         this.trim()
         await Deno.writeTextFile(
             `./${this.parameters.name}.txt`,
-            customStringify({
-                metadata: this.metadata,
-                entries: this.entries
-            })
+            customStringify({metadata: this.metadata, entries: this.entries}, this.parameters.useStringAliases)
         )
     }
 
     async load(): Promise<void> {
         this.clear()
         const stringified = await Deno.readTextFile(`./${this.parameters.name}.txt`)
-        const parsed = customParse(stringified, this.parameters.customClasses)
+        const parsed = customParse(stringified, this.parameters.customClasses, this.parameters.useStringAliases)
         this.metadata = parsed.metadata
         this.entries = parsed.entries
     }
