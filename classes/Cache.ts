@@ -11,21 +11,20 @@ type constructor<T> = new (...args: any) => T
 export class Cache<T> {
     parameters: {
         name: string
-        size: number //in MBs
+        maxEntries: number //in MBs
         customClasses: constructor<any>[],
         useStringAliases: boolean
     }
     metadata: {
         ledger: Set<string>[],
         amtEntries: number,
-        totalBytes: number
     }
     entries: { [key: string]: Entry<T> }
 
-    constructor(name: string, size: number, customClasses?: constructor<any>[], useStringAliases?: boolean) {
+    constructor(name: string, maxEntries: number, customClasses?: constructor<any>[], useStringAliases?: boolean) {
         this.parameters = {
             name,
-            size,
+            maxEntries,
             customClasses: (customClasses) ? customClasses : [],
             useStringAliases: (useStringAliases) ? useStringAliases : false
         }
@@ -33,7 +32,6 @@ export class Cache<T> {
         this.metadata = {
             ledger: [],
             amtEntries: 0,
-            totalBytes: 0
         }
         this.entries = {}
     }
@@ -64,7 +62,6 @@ export class Cache<T> {
         this.entries[key] = entry
         this.addToLedger(key)
         this.metadata.amtEntries++
-        this.metadata.totalBytes += entry.bytes
         this.trim()
     }
 
@@ -98,7 +95,6 @@ export class Cache<T> {
         }
 
         this.metadata.amtEntries--
-        this.metadata.totalBytes -= this.entries[key].bytes
         this.removeFromLedger(key)
         delete this.entries[key]
     }
@@ -106,7 +102,6 @@ export class Cache<T> {
     clear(): void {
         this.metadata.ledger = []
         this.metadata.amtEntries = 0
-        this.metadata.totalBytes = 0
         this.entries = {}
     }
 
@@ -138,9 +133,9 @@ export class Cache<T> {
     private trim(): void {
         const mData = this.metadata
         const { ledger } = mData
-        const { size } = this.parameters
+        const maxEntries = this.parameters.maxEntries
         function tooBig(): boolean {
-            return mData.totalBytes > size*1000000 //size is given in MBs
+            return mData.amtEntries > maxEntries //size is given in MBs
         }
         if (!tooBig()) {return}
         for (const ledgerSet of ledger) {
