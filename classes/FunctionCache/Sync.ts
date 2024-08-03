@@ -1,6 +1,5 @@
 import { Cache } from "../Cache.ts"
 
-type constructor<T> = new (...args: any) => T
 
 export class SyncFunctionCache<F extends (...args: any) => any> {
     private func: F
@@ -8,14 +7,13 @@ export class SyncFunctionCache<F extends (...args: any) => any> {
     private shelfLife: number | undefined
 
     constructor(
-        name: string,
         func: F,
-        cacheSize: number,
-        expectedClasses: constructor<any>[],
+        name: string,
+        maxEntries: number,
         shelfLife: number | undefined
     ) {
         this.func = func
-        this.cache = new Cache(name, cacheSize, expectedClasses)
+        this.cache = new Cache(name, maxEntries)
         this.shelfLife = shelfLife
     }
 
@@ -26,10 +24,9 @@ export class SyncFunctionCache<F extends (...args: any) => any> {
         if (cacheResult) {
             return cacheResult
         }
-
+        //else:
         const funcResult = this.func(...params)
         this.cache.store(key, funcResult, this.shelfLife)
-        await this.cache.save()
         return funcResult
     }
 }

@@ -1,18 +1,11 @@
-import { Entry } from "../classes/Entry.ts";
-import { customStringify, customParse } from "../functions/parseAndStringify.ts";
+import { Entry } from "./Entry.ts";
 import { params } from "../parameters.ts";
 
-/*
-thetotalBytes estimate is quite far off right now, unfortunately. It's because parse/stringify compresses the data, which is dope ofc, but it means estimating the size of the whole stringified cache is not very easy just going off of the size of stringified individual entries. Probable it would be better to limit to amt of entries instead? Maybe not. In any case, typically the totalBytes estimate is twice as big as the actual file size. At least that's about how it turned out for a cache with an estimate of 30MB and actual of 15MB.
-*/
-
-type constructor<T> = new (...args: any) => T
 
 export class Cache<T> {
     parameters: {
         name: string
         maxEntries: number //in MBs
-        customClasses: constructor<any>[],
         useStringAliases: boolean
     }
     metadata: {
@@ -25,31 +18,13 @@ export class Cache<T> {
         this.parameters = {
             name,
             maxEntries,
-            customClasses: (customClasses) ? customClasses : [],
             useStringAliases: (useStringAliases) ? useStringAliases : false
         }
-        this.parameters.customClasses.push(Entry<T>)
         this.metadata = {
             ledger: [],
             amtEntries: 0,
         }
         this.entries = {}
-    }
-
-    async save(): Promise<void> {
-        this.trim()
-        await Deno.writeTextFile(
-            `./${this.parameters.name}.txt`,
-            customStringify({metadata: this.metadata, entries: this.entries}, this.parameters.useStringAliases)
-        )
-    }
-
-    async load(): Promise<void> {
-        this.clear()
-        const stringified = await Deno.readTextFile(`./${this.parameters.name}.txt`)
-        const parsed = customParse(stringified, this.parameters.customClasses, this.parameters.useStringAliases)
-        this.metadata = parsed.metadata
-        this.entries = parsed.entries
     }
 
     store(key: string, contents: T, shelfLife?: number): void {

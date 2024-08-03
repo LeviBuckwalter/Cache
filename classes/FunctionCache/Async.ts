@@ -1,6 +1,5 @@
 import { Cache } from "../Cache.ts"
 
-type constructor<T> = new (...args: any) => T
 
 export class AsyncFunctionCache<F extends (...args: any) => Promise<any>> {
     private func: F
@@ -8,14 +7,13 @@ export class AsyncFunctionCache<F extends (...args: any) => Promise<any>> {
     private shelfLife: number | undefined
 
     constructor(
-        name: string,
         func: F,
-        cacheSize: number, //measured in MBs
-        expectedClasses: constructor<any>[],
+        name: string,
+        maxEntries: number,
         shelfLife: number | undefined
     ) {
         this.func = func
-        this.cache = new Cache(name, cacheSize, expectedClasses)
+        this.cache = new Cache(name, maxEntries)
         this.shelfLife = shelfLife
     }
 
@@ -29,7 +27,6 @@ export class AsyncFunctionCache<F extends (...args: any) => Promise<any>> {
         //else:
         const funcResult = await this.func(...params)
         this.cache.store(key, funcResult, this.shelfLife)
-        await this.cache.save()
         return funcResult
     }
 }

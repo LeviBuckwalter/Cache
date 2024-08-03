@@ -14,8 +14,4 @@ export class Entry<T> {
             return false
         }
     }
-
-    toSeed(): [T, number | null] {
-        return [this.contents, this.expireTS]
-    }
 }
