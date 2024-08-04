@@ -27,6 +27,8 @@ export class Cache<T> {
         this.entries = {}
     }
 
+    public makeKey(...params: any): any {}
+
     store(key: string, contents: T, shelfLife?: number): void {
         if (key in this.entries) {
             this.discard(key)
