@@ -6,7 +6,6 @@ export class Cache<T> {
     parameters: {
         name: string
         maxEntries: number //in MBs
-        useStringAliases: boolean
     }
     metadata: {
         ledger: Set<string>[],
@@ -14,11 +13,10 @@ export class Cache<T> {
     }
     entries: { [key: string]: Entry<T> }
 
-    constructor(name: string, maxEntries: number, customClasses?: constructor<any>[], useStringAliases?: boolean) {
+    constructor(name: string, maxEntries: number) {
         this.parameters = {
             name,
             maxEntries,
-            useStringAliases: (useStringAliases) ? useStringAliases : false
         }
         this.metadata = {
             ledger: [],
