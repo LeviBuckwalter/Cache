@@ -1,4 +1,4 @@
-import { Cache } from "../Cache.ts"
+import { Cache } from "../Cache.js"
 
 
 export class SyncFunctionCache<F extends (...args: any) => any> {

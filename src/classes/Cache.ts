@@ -1,5 +1,5 @@
-import { Entry } from "./Entry.ts";
-import { params } from "../parameters.ts";
+import { Entry } from "./Entry.js";
+import { params } from "../parameters.js";
 
 
 export class Cache<T> {
