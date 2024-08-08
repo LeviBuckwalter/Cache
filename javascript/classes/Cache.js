@@ -1,9 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Cache = void 0;
-const Entry_ts_1 = require("./Entry.ts");
-const parameters_ts_1 = require("../parameters.ts");
-class Cache {
+import { Entry } from "./Entry.js";
+import { params } from "../parameters.js";
+export class Cache {
     constructor(name, maxEntries) {
         this.parameters = {
             name,
@@ -21,7 +18,7 @@ class Cache {
             this.discard(key);
         }
         const expireTS = (shelfLife) ? Date.now() + shelfLife : null;
-        const entry = new Entry_ts_1.Entry(contents, expireTS);
+        const entry = new Entry(contents, expireTS);
         this.entries[key] = entry;
         this.addToLedger(key);
         this.metadata.amtEntries++;
@@ -63,7 +60,7 @@ class Cache {
     }
     addToLedger(key) {
         const { ledger, amtEntries } = this.metadata;
-        if (ledger.length === 0 || ledger[ledger.length - 1].size > amtEntries * parameters_ts_1.params.ledgSetsMaxRat) {
+        if (ledger.length === 0 || ledger[ledger.length - 1].size > amtEntries * params.ledgSetsMaxRat) {
             ledger.push(new Set());
         }
         ledger[ledger.length - 1].add(key);
@@ -103,4 +100,3 @@ class Cache {
         }
     }
 }
-exports.Cache = Cache;

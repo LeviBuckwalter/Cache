@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Entry = void 0;
-class Entry {
+export class Entry {
     constructor(contents, expireTS) {
         this.contents = contents;
         this.expireTS = (expireTS === undefined) ? null : expireTS;
@@ -15,4 +12,3 @@ class Entry {
         }
     }
 }
-exports.Entry = Entry;
